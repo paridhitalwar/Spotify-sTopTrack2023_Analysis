@@ -1,0 +1,368 @@
+---
+title: "Analysis on Spotify's Top Tracks of 2023"
+author: "Paridhi Talwar"
+output:
+  html_document: 
+    fig_width: 8
+    code_folding: hide
+    highlight: tango
+    toc: true
+    toc_float:
+      collapsed: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=8, fig.height=3.5,  
+                      echo=FALSE, warning=FALSE, message=FALSE)
+
+```
+
+
+The music industry is always changing in the digital age, reflecting changes in society trends, artistic expression, and culture. Services like Spotify are great data sources because they provide unmatched insights into music consumption patterns, genre preferences, and the various factors influencing the popularity of individual songs. This analysis looks at Spotify's "Top Tracks of 2023" playlist, which is a carefully selected selection of the year's most influential and widely streamed music.
+
+## Dataset for Analysis
+
+The dataset has been downloaded from Kaggle. The dataset contains the tracks from Spotify's official "Top Tracks of 2023" playlist, which highlights the most well-liked and significant music of the year based on Spotify's streaming data, are included in the dataset under review. It provides a wide range of musical genres, performers, and styles that shaped the 2023 musical scene. The dataset includes a range of features, popularity metrics, and metadata for every track entry. For music lovers, data analysts, and researchers looking to investigate musical trends or create music recommendation systems based on real-world evidence, this dataset is a great resource.
+```{r echo=TRUE}
+#install.packages("ggplot2")
+#install.packages("dplyr")
+#install.packages("plotly")
+
+library(ggplot2)
+library(dplyr)
+library(plotly)
+library(viridis)
+library(gridExtra)
+library(stringr)
+# Step 1: Importing the dataset
+music_data <- read.csv("C:/Users/parid/OneDrive/Desktop/STUDY  BU/CS544 Foundations of Analytics/Project/top_50_2023.csv", header = TRUE)
+
+```
+## Preprocessing
+The information was taken straight from the Spotify Web API, more especially from the official Spotify-curated playlist "Top Tracks of 2023". Through a number of endpoints, the Spotify API offers comprehensive information about songs, artists, and albums. Python scripts were written to process and organize the data using data science libraries like spotipy to interface with the Spotify API and pandas for data manipulation. Authentication, API requests, data transformation, cleaning, and saving were all part of the process. The dataset was ready for analysis thanks to this expedited procedure, which also gave insightful information about the top tracks of 2023 based on Spotify's streaming metrics.
+
+## Exploring Music Trends
+Our goal in analyzing Spotify's "Top Tracks of 2023" playlist was to identify recurring themes and traits in the music that was highlighted. In order to obtain thorough understanding, both numerical and categorical variables were examined in this investigation. The categorical variable "is_explicit," which indicates whether a track contains explicit content, was the subject of our analysis's first section. We sought to determine the frequency of explicit content in the top tracks of 2023 by displaying the distribution of explicit vs. non-explicit tracks as a pie chart. This investigation is especially important because it illustrates how society views explicit music content and how track popularity is affected by it.
+
+Transitioning to numerical variables, we examined the track duration distribution using the variable "duration_ms." This analysis offers insightful information about the playlist's overall composition and structure, as well as trends in track lengths and other temporal aspects of the music. We also looked at correlations between different musical qualities like valence, popularity, energy, and danceability using scatter plots. We sought to identify patterns and trends in the melodic characteristics of the top tracks of 2023 by visualizing these relationships. Comprehending these associations illuminates listener inclinations, the attributes of mainstream music, and the elements propelling track popularity on Spotify.
+
+```{r echo=TRUE}
+# Step 3: Analyze at least one categorical variable (is_explicit) and one numerical variable (duration_ms) with appropriate plots
+
+# For categorical variable (is_explicit), create a pie chart
+pie_chart_is_explicit <- plot_ly(music_data, labels = ~is_explicit, type = "pie", source = "pie chart") %>%
+  layout(title = "Distribution of Explicit vs. Non-Explicit Tracks")
+
+#print(pie_chart_is_explicit)
+pie_chart_is_explicit
+
+
+# For numerical variable (duration_ms), create a line graph
+line_graph_duration_ms <- ggplot(music_data, aes(x = 1:nrow(music_data), y = duration_ms)) +
+  geom_line(color = "purple") +
+  labs(title = "Duration Distribution") +
+  theme_minimal()
+
+# Convert line graph to plotly
+line_graph_duration_ms <- ggplotly(line_graph_duration_ms)
+line_graph_duration_ms
+
+# For popularity vs. energy, create a scatter plot
+scatter_plot_popularity_energy <- ggplot(music_data, aes(x = popularity, y = energy)) +
+  geom_point(color = "blue", alpha = 0.7) +
+  labs(title = "Popularity vs. Energy")
+
+# Convert scatter plot to plotly
+scatter_plot_popularity_energy <- ggplotly(scatter_plot_popularity_energy)
+scatter_plot_popularity_energy
+
+# For danceability vs. energy, create a scatter plot
+scatter_plot_danceability_energy <- ggplot(music_data, aes(x = danceability, y = energy)) +
+  geom_point(color = "salmon", alpha = 0.7) +
+  labs(title = "Danceability vs. Energy")
+
+# Convert scatter plot to plotly
+scatter_plot_danceability_energy <- ggplotly(scatter_plot_danceability_energy)
+scatter_plot_danceability_energy
+
+# For valence vs. energy, create a scatter plot
+scatter_plot_valence_energy <- ggplot(music_data, aes(x = valence, y = energy)) +
+  geom_point(color = "limegreen", alpha = 0.7) +
+  labs(title = "Valence vs. Energy")
+
+# Convert scatter plot to plotly
+scatter_plot_valence_energy <- ggplotly(scatter_plot_valence_energy)
+
+scatter_plot_valence_energy
+
+```
+
+## Relationship between Music Genres and Popularity
+We start our analysis by making a vibrant pie chart that shows the distribution of genres according to their mean popularity scores. Initially, it preprocesses the dataset, separating combined genre entries into individual genres for each track. Next, it categorizes these genres into broader categories such as pop, hip-hop, K-pop, and corrido, facilitating a more comprehensive analysis. By mapping subcategories to these broader categories, the code enables a clearer understanding of genre distributions and their associated popularity levels. Ultimately, the generated pie chart visually represents the distribution of popularity across these categorized genres, providing valuable insights into the prevailing trends and preferences within the music dataset.
+
+We also use a line graph to examine in more detail how popularity is distributed throughout all tracks. This graph offers a more comprehensive view of the popularity distribution of the tracks by visualizing the variance in popularity scores throughout the playlist. Plotting each track's popularity score against its place in the dataset yields the line's individual points. The line graph gives us information about the range and distribution of track popularity within the playlist and helps us spot trends or fluctuations in popularity.
+
+Our goal with these visualizations is to shed light on how popularity and musical genres interact in Spotify's "Top Tracks of 2023" playlist. We can better understand the factors influencing track popularity and listeners' preferred genres within the playlist by combining the analysis of these two variables.
+```{r echo=TRUE}
+
+# Step 4: Analyze a set of two or more variables (genres and popularity) with appropriate plots
+
+music_data$genres <- str_replace_all(music_data$genres, "[\\[\\]']", "")
+split_genres <- str_split(music_data$genres, ", ")
+
+# Create a data frame with separated genres
+separated_data <- data.frame(
+  artist_name = rep(music_data$artist_name, sapply(split_genres, length)),
+  track_name = rep(music_data$track_name, sapply(split_genres, length)),
+  abbreviated_genres = unlist(split_genres),
+  popularity = rep(music_data$popularity, sapply(split_genres, length))
+)
+
+# Define mapping from subcategories to categories
+category_mapping <- list(
+  pop = c("pop", "r&b", "rap", "afrobeats", "nigerian pop"),
+  hip_hop = c("argentine hip hop", "trap argentino", "trap latino", "urbano latino", "rap"),
+  k_pop = c("k-pop"),
+  corrido = c("corrido", "corridos tumbados", "sad sierreno", "sierreno")
+  # Add more mappings as needed
+)
+
+# Function to map subcategories to categories
+map_to_category <- function(subcategories) {
+  for (category in names(category_mapping)) {
+    if (any(subcategories %in% category_mapping[[category]])) {
+      return(category)
+    }
+  }
+  return("Other")
+}
+
+# Apply the mapping function to each row of the separated_data dataframe
+separated_data$category <- sapply(separated_data$abbreviated_genres, map_to_category)
+
+# Create pie chart of combined categories
+pie_chart_categories <- separated_data %>%
+  group_by(category) %>%
+  summarise(popularity = mean(popularity)) %>%
+  plot_ly(labels = ~category, values = ~popularity, type = 'pie') %>%
+  layout(title = "Genre Distribution", showlegend = TRUE)
+
+pie_chart_categories
+
+# For popularity, create a line graph to visualize its distribution
+line_graph_popularity <- ggplot(music_data, aes(x = 1:nrow(music_data), y = popularity)) +
+  geom_line(color = "darkblue") +
+  labs(title = "Popularity Distribution") +
+  theme_minimal()
+
+# Convert line graph to plotly
+line_graph_popularity <- ggplotly(line_graph_popularity)
+
+# Print plots
+line_graph_popularity
+
+```
+We can see from the genre distribution pie chart that all the genres have almost the equal popularity but pop songs has the maximum popularity followed by kpop songs.
+
+## Musical Attributes in Spotify's "Top Tracks of 2023" Playlist
+In order to investigate how the "energy" attribute is distributed throughout the playlist, we first make a density plot. The probability density function for energy values is represented visually by the density plot, which enables us to see the distribution pattern and spot any peaks or clusters. To improve visibility, the plot is colored a dark green, and the density curve is indicated by brown outlines. This visualization helps us understand how the energy levels of the songs in the playlist are distributed.
+
+Finally, we use a different density plot to investigate the "valence" distribution. This visualization, like the energy density plot, enables us to study the valence value distribution pattern throughout the playlist. To set it apart from the energy plot, the density plot is colored orange, with brown outlines drawing attention to the density curve. This visualization helps us understand the emotional qualities that the tracks convey because valence stands for the musical positivity that a track conveys.
+```{r echo=TRUE}
+
+# Step 5: Examine the distribution of a numerical variable (e.g., energy)
+
+# For energy, create a density plot
+density_plot_energy <- ggplot(music_data, aes(x = energy)) +
+  geom_density(fill = "darkgreen", color = "brown") +
+  labs(title = "Density Plot of Energy")
+
+# Convert density plot to plotly
+density_plot_energy <- ggplotly(density_plot_energy)
+
+
+# For valence, create a density plot
+density_plot_valence <- ggplot(music_data, aes(x = valence)) +
+  geom_density(fill = "orange", color = "brown") +
+  labs(title = "Density Plot of Valence")
+
+# Convert density plot to plotly
+density_plot_valence <- ggplotly(density_plot_valence)
+
+# Print all plots
+density_plot_energy
+density_plot_valence
+
+```
+
+
+## Applying the Central Limit Theorem
+The Central Limit Theorem (CLT) is used in this step to observe how sample means converge to the population mean using Spotify's "Top Tracks of 2023" playlist's popularity data.
+
+We create random samples of popularity data and specify sample sizes between 10 and 40. Histograms are used to display the distribution of each sample, with different colors denoting different sample sizes. These histograms allow us to see how the popularity distribution varies as sample size increases.
+
+For convenience of comparison, the histograms are arranged with the corresponding sample sizes. The behavior of sample means and the reliability of statistical inference within the playlist data are both explained by this analysis.
+```{r echo=TRUE}
+
+# Step 6: Apply the Central Limit Theorem by drawing various random samples of the data (e.g., popularity)
+
+# Set seed for reproducibility
+set.seed(123)
+# Specify the number of samples
+sample_sizes <- c(10, 20, 30, 40)
+binwidth <- 0.1  # Reduce binwidth for smoother histograms
+
+# Define colors for each sample size
+color_map <- c("orange", "turquoise", "violet", "darkgreen")
+
+# Create an empty list to store histograms
+histograms <- list()
+
+# Loop through sample sizes to generate samples and calculate means
+for (i in seq_along(sample_sizes)) {
+  size <- sample_sizes[i]
+  
+  # Generate random samples and calculate means
+  sample_data <- rnorm(1000 * size)  # Generate larger sample size
+  sample_means <- tapply(sample_data, rep(1:1000, each = size), mean)
+  
+  # Calculate mean and standard deviation for the sample
+  mean_val <- mean(sample_data)
+  sd_val <- sd(sample_data)
+  
+  # Create histogram of sample means with specific color
+  histogram <- ggplot(data.frame(popularity = sample_means), aes(x = popularity, fill = as.factor(size))) +
+    geom_histogram(binwidth = binwidth, alpha = 0.7) +
+    scale_fill_manual(values = color_map[i], guide = FALSE) + # Use specific color for this sample size, remove automatic legend
+    theme_minimal() + 
+    labs(title = paste("Central Limit Theorem"),
+         subtitle = paste("Mean:", round(mean_val, 2), "SD:", round(sd_val, 2)))
+  
+  # Convert histogram to plotly with reduced size
+  histogram <- ggplotly(histogram, height = 500, width = 700)
+  
+  # Store histogram in the list
+  histograms[[i]] <- histogram
+  
+  # Print mean and standard deviation
+  print(paste("Sample Size:", size, "| Mean:", round(mean_val, 4), "| SD:", round(sd_val, 4)))
+}
+
+# Combine histograms into a subplot
+subplot_list <- lapply(histograms, function(h) h)
+
+# Arrange plots in a 2x2 grid
+subplot(subplot_list, nrows = 2)
+
+
+```
+
+## Exploring Sampling Methods 
+This step shows how to apply different sampling techniques to the popularity data that was taken from Spotify's "Top Tracks of 2023" playlist.
+
+First, we take 50 randomly chosen records at random from the popularity data in order to perform simple random sampling. Next, we choose a record from the dataset every tenth in order to conduct systematic sampling. In order to ensure representation across genres, we lastly perform stratified sampling by classifying the data according to genres and choosing five records at random from each genre.
+
+Density plots are used to compare the popularity distributions for each sampling strategy. The distribution of popularity scores within each sampled subset is visually represented by the density plots. We can learn a lot about how various sampling techniques affect the popularity data distribution within the playlist by looking at these visualizations, which also provide useful information for statistical analysis and inference.
+```{r echo=TRUE}
+# Step 7: Demonstrate various sampling methods (e.g., simple random sampling, systematic sampling, stratified sampling, etc.)
+
+# Simple random sampling
+sample_size <- 50
+simple_random_sample <- sample(music_data$popularity, sample_size)
+
+# Systematic sampling (every nth record)
+systematic_sample <- music_data[seq(1, nrow(music_data), by = 10), ]
+
+# Stratified sampling by genres
+stratified_sample <- music_data %>%
+  group_by(genres) %>%
+  sample_n(size = 5, replace = TRUE)
+
+# Compare the distributions
+density_plot_simple_random <- ggplot(data.frame(popularity = simple_random_sample), aes(x = popularity)) +
+  geom_density(fill = "pink", color = "brown") +
+  labs(title = "Density Plot of Simple Random Sampled Popularity")
+
+# Convert density plot to plotly
+density_plot_simple_random <- ggplotly(density_plot_simple_random)
+
+density_plot_systematic <- ggplot(systematic_sample, aes(x = popularity)) +
+  geom_density(fill = "maroon", color = "brown") +
+  labs(title = "Density Plot of Systematic Sampled Popularity")
+
+# Convert density plot to plotly
+density_plot_systematic <- ggplotly(density_plot_systematic)
+
+density_plot_stratified <- ggplot(stratified_sample, aes(x = popularity)) +
+  geom_density(fill = "darkgreen", color = "brown") +
+  labs(title = "Density Plot of Stratified Sampled Popularity")
+
+# Convert density plot to plotly
+density_plot_stratified <- ggplotly(density_plot_stratified)
+
+# Print the density plots
+density_plot_simple_random
+density_plot_systematic
+density_plot_stratified
+
+```
+
+## Data Wrangling Techniques for Analysis
+Here, we use data wrangling methods to glean insightful information from Spotify's "Top Tracks of 2023" playlist. In order to determine the frequency of explicit content in the playlist, we first filter the dataset to remove explicit tracks. We then concentrate our analysis on this subset. We then get insights into the popularity trends across the various music genres represented in the playlist by sorting the data according to genres and figuring out the average popularity for each genre. Lastly, a brief synopsis of the popularity distribution within the playlist is provided by displaying the average popularity computation results for each genre. By using these data wrangling techniques, we are able to gain a better understanding of the musical landscape represented in the dataset by revealing important details about the prevalence of explicit content and the popularity of certain genres in Spotify's "Top Tracks of 2023" playlist.
+```{r echo=TRUE}
+# Step 8: Utilize data wrangling techniques for analysis
+
+# Filter the data for explicit tracks
+explicit_tracks <- music_data %>%
+  filter(is_explicit == TRUE)
+
+# Group the data by genres and calculate average popularity for each genre
+avg_popularity_genre <- music_data %>%
+  group_by(genres) %>%
+  summarise(avg_popularity = mean(popularity, na.rm = TRUE))
+
+# Print the result
+avg_popularity_genre
+```
+
+## Creating Interactive Popularity Histogram Using Plotly
+In this step, we use data from Spotify's "Top Tracks of 2023" playlist to create an interactive popularity histogram using Plotly. First, we use the ggplot2 library to create a histogram with the popularity scores on the x-axis and the frequency of occurrence on the y-axis. The histogram is designed with 30 bins, a dark red fill color, and brown outlines to accurately depict the popularity score distribution. Next, we use the ggplotly function to turn the static ggplot histogram into an interactive Plotly object so that users can interact with the histogram by hovering over data points, adjusting the zoom level, and accessing more information. 
+
+A more interesting and educational data exploration experience is made possible by this interactive visualization, which improves the exploratory analysis of popularity distribution within the playlist. At last, we present the interactive histogram, which offers users a user-friendly means of visualizing and examining the popularity score distribution of the songs included in Spotify's "Top Tracks of 2023" playlist.
+```{r echo=TRUE}
+
+
+# Interactive histogram of popularity
+histogram_popularity <- ggplot(data = music_data, aes(x = popularity)) +
+  geom_histogram(fill = "darkred", color = "brown", bins = 30) +
+  labs(title = "Histogram of Popularity",
+       x = "Popularity",
+       y = "Frequency")
+
+# Convert histogram to plotly
+histogram_popularity <- ggplotly(histogram_popularity)
+
+# Print the histogram
+histogram_popularity
+
+```
+
+
+## Loudness Distribution
+In order to examine the loudness distribution of the songs included in Spotify's "Top Tracks of 2023" playlist, this code creates a box plot. The box plot illustrates the loudness variable's central tendency, spread, and outliers using the ggplot2 library. Loudness values are represented by the y-axis, and for clarity, the box plot is filled with magenta and has brown outlines. Users can more effectively explore the loudness distribution by interacting with the plot by hovering over data points for particular loudness values and gaining access to more details by converting the static box plot into an interactive Plotly object. All things considered, this visualization offers insightful information about the loudness characteristics of the playlist's songs, which facilitates comprehension of the musical dynamics within.
+```{r echo=TRUE}
+
+boxplot_loudness <- ggplot(music_data, aes(y = loudness)) +
+  geom_boxplot(fill = "magenta", color = "brown") +
+  labs(title = "Loudness Distribution")
+
+# Convert box plot to plotly
+boxplot_loudness <- ggplotly(boxplot_loudness)
+
+boxplot_loudness
+
+```
+## Conclusion
+To sum up, the examination of Spotify's "Top Tracks of 2023" playlist has revealed some fascinating information about the dynamics of modern music consumption. By carefully analyzing both numerical and categorical variables—such as track length and musical attributes—we have developed a sophisticated understanding of the playlist's structure and the elements affecting track popularity. Furthermore, examining the correlation between musical genres and their popularity has illuminated listeners' inclinations and the diverse allure of distinct genres within the playlist. These results add to our knowledge of the changing music scene and offer insightful information to researchers, data analysts, and music lovers who are trying to identify patterns and trends in music consumption.
+
+Furthermore, our analysis has become more comprehensive and easily comprehensible by utilizing data wrangling techniques and interactive visualizations. We have enhanced the insight and engagement of the playlist exploration process by utilizing Plotly to create interactive plots, filtering the dataset for explicit tracks, and determining the average popularity of each genre. These techniques have improved the exploratory analysis process by providing users with a dynamic way to interact with the data, in addition to making it easier to spot trends and patterns. In the end, this study is a useful tool for academics and music industry stakeholders alike, demonstrating the effectiveness of data analytics in deciphering the complexities of music consumption patterns.
